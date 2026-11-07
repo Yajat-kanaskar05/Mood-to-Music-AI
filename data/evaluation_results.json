@@ -1,0 +1,25 @@
+{
+  "evaluation_timestamp": "2026-10-27 17:23:49",
+  "results": [
+    {
+      "metric": "CF RMSE",
+      "score": 0.1818,
+      "target": "< 0.80",
+      "passed": true,
+      "mae": 0.0818,
+      "test_samples": 5410
+    },
+    {
+      "metric": "Intra-list Diversity",
+      "score": 0.6978,
+      "target": "0.30 - 0.70",
+      "passed": true
+    },
+    {
+      "metric": "ML Inference Time (Python)",
+      "score_ms": 65.78,
+      "target": "< 150 ms",
+      "passed": true
+    }
+  ]
+}
