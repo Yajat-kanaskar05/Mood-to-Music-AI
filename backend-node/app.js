@@ -38,12 +38,15 @@ app.get('/health', (req, res) => res.json({ status: 'ok', service: 'node-backend
 const frontendDistPath = path.join(__dirname, '../frontend/dist');
 app.use(express.static(frontendDistPath));
 
-// Client-side routing fallback: serve index.html for all non-API GET requests
-app.get('*', (req, res, next) => {
+// Client-side routing fallback: serve index.html for all non-API GET requests (Express 5 compatible)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    return res.sendFile(path.join(frontendDistPath, 'index.html'));
+  }
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'API route not found' });
   }
-  res.sendFile(path.join(frontendDistPath, 'index.html'));
+  next();
 });
 
 // Global error handler
