@@ -1,3 +1,4 @@
+const path       = require('path');
 const express    = require('express');
 const cors       = require('cors');
 const helmet     = require('helmet');
@@ -12,13 +13,19 @@ const recommendRoutes = require('./src/routes/recommend');
 const app = express();
 
 // Security and utility middleware
-app.use(helmet());
-app.use(cors({ origin: '*' })); // Allow frontend calls (port 3000 or custom)
+// Disable strict CSP/COEP so embedded Spotify player and web fonts render smoothly
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  })
+);
+app.use(cors({ origin: '*' })); // Allow cross-origin requests
 app.use(morgan('dev'));
 app.use(express.json());
 app.use('/api/', apiLimiter);
 
-// Routes
+// API Routes
 app.use('/api/auth',      authRoutes);
 app.use('/api/users',     userRoutes);
 app.use('/api/songs',     songRoutes);
@@ -26,6 +33,18 @@ app.use('/api/recommend', recommendRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'node-backend' }));
+
+// Serve compiled React frontend assets
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
+app.use(express.static(frontendDistPath));
+
+// Client-side routing fallback: serve index.html for all non-API GET requests
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
 
 // Global error handler
 app.use((err, req, res, next) => {
